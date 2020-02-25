@@ -5,6 +5,8 @@ endif
 
 IMG := x86os.img
 
+.PHONY: run clean
+
 run: $(IMG)
 	qemu-system-i386 -boot order=a -m size=32M \
 		-drive file=$(IMG),if=floppy,index=0,format=raw
@@ -18,3 +20,6 @@ $(IMG): ipl.bin
 
 ipl.bin: ipl.s ipl.ld
 	$(CC) -o $@ -nostdlib -T ipl.ld ipl.s
+
+clean:
+	$(RM) $(IMG) ipl.bin
