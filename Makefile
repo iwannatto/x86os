@@ -1,3 +1,8 @@
+# for development on MacOS
+ifeq ($(shell uname),Darwin)
+CC := x86_64-elf-gcc
+endif
+
 IMG := x86os.img
 
 run: $(IMG)
