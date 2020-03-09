@@ -110,7 +110,7 @@ nextsector:
     # %ch is cylindar
     # .if (++%ch < 10), continue to read sector
     addb    $1, %ch
-    cmpb    $1, %ch
+    cmpb    $10, %ch
     jb      readsector
     # .else, jump to entry
     # 0xc200 = 0x8000 + 0x4200

@@ -15,7 +15,8 @@
     nop
     # IMR(slave) = 0xff
     outb    %al, $0xa1
-    # cli
+
+    # disable interrupts to CPU
     cli
 
     # enable A20 gate
@@ -28,7 +29,6 @@
     outb    %al, $0x60
     call    waitkbdout
 
-.arch i486
     lgdtl   (GDTR0)
     # disable paging and enable protected mode
     movl    %cr0, %eax

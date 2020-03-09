@@ -1,4 +1,4 @@
-/entry.bin
-/ipl.bin
+/*.bin
+/*.o
 /sankou
 /x86os.img

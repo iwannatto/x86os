@@ -1,8 +1,11 @@
 # for development on MacOS
 ifeq ($(shell uname),Darwin)
 CC := x86_64-elf-gcc
-CFLAGS := -m32 -march=i486
+AS := x86_64-elf-as
+LD := x86_64-elf-ld
 endif
+CFLAGS := -m32 -march=i486
+ASFLAGS := --32 -march=i486
 
 IMG := x86os.img
 
@@ -23,15 +26,15 @@ debug: $(IMG)
 # -C: create
 # -B: boot sector
 # -i, :: -> drive letter
-$(IMG): ipl.bin entry.bin
+$(IMG): ipl.bin x86os.bin
 	mformat -f 1440 -C -B ipl.bin -i $@ ::
-	mcopy -i $@ entry.bin ::
+	mcopy -i $@ x86os.bin ::
 
 ipl.bin: ipl.s ipl.ld
 	$(CC) $(CFLAGS) -o $@ -nostdlib -T ipl.ld ipl.s
 
-entry.bin: entry.s main.c entry.ld
-	$(CC) $(CFLAGS) -o $@ -nostdlib -T entry.ld entry.s main.c
+x86os.bin: entry.o main.o x86os.ld
+	$(LD) -o $@ -nostdlib -T x86os.ld entry.o main.o
 
 clean:
-	$(RM) $(IMG) ipl.bin entry.bin
+	$(RM) $(IMG) *.bin *.o
