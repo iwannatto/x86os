@@ -1,9 +1,49 @@
+int load_eflags(void);
+void store_eflags(int eflags);
+void out8(short port, char data);
+
+void init_palette(void) {
+    unsigned char palette_rgb[16*3] = {
+        0x00, 0x00, 0x00,
+        0xff, 0x00, 0x00,
+        0x00, 0xff, 0x00,
+        0xff, 0xff, 0x00,
+        0x00, 0x00, 0xff,
+        0xff, 0x00, 0xff,
+        0x00, 0xff, 0xff,
+        0xff, 0xff, 0xff,
+        0xc6, 0xc6, 0xc6,
+        0x84, 0x00, 0x00,
+        0x00, 0x84, 0x00,
+        0x84, 0x84, 0x00,
+        0x00, 0x00, 0x84,
+        0x84, 0x00, 0x84,
+        0x00, 0x84, 0x84,
+        0x84, 0x84, 0x84,
+    };
+
+    int eflags = load_eflags();
+
+    asm volatile("cli");
+
+    out8(0x03c8, 0);
+    for (int i = 0; i < 16; ++i) {
+        out8(0x03c9, palette_rgb[3*i]);
+        out8(0x03c9, palette_rgb[3*i + 1]);
+        out8(0x03c9, palette_rgb[3*i + 2]);
+    }
+
+    store_eflags(eflags);
+}
+
 void main(void) {
+    init_palette();
+
     volatile char *vram = (volatile char *)0xa0000;
     for (int i = 0; i < 0x1000; ++i) {
         vram[i] = 15;
     }
-
+    
     while (1) {
         asm volatile("hlt");
     }
