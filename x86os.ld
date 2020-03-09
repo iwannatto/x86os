@@ -13,5 +13,5 @@ MEMORY {
 
 
 SECTIONS {
-    .text : { *(.text) } >KERNEL
+    .text : { entry.o(.text) } >KERNEL
 }

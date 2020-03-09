@@ -136,7 +136,7 @@ fin:
     hlt
     jmp     fin
 msg_error:
-    .ascii  "\nerror\n\r\0"
+    .asciz "\nerror\n\r"
 
 # to indicate that this is master boot record
     .org    0x1fe, 0x00 # 0x1fe is offset of boot signature

@@ -8,7 +8,7 @@ CFLAGS := -m32 -march=i486
 ASFLAGS := --32 -march=i486
 
 IMG := x86os.img
-OS_SRCS := entry.o main.o asm.o
+OS_SRCS := entry.o main.o asm.o hankaku.o
 
 .PHONY: run clean
 
@@ -35,7 +35,10 @@ ipl.bin: ipl.s ipl.ld
 	$(CC) $(CFLAGS) -o $@ -nostdlib -T ipl.ld ipl.s
 
 x86os.bin: $(OS_SRCS) x86os.ld
-	$(LD) -o $@ -nostdlib -T x86os.ld $(OS_SRCS)
+	$(LD) -M -o $@ -nostdlib -T x86os.ld $(OS_SRCS)
+
+hankaku.c: hankaku.txt hankaku.py
+	python3 hankaku.py
 
 clean:
 	$(RM) $(IMG) *.bin *.o
