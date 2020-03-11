@@ -1,3 +1,5 @@
+#include <stdarg.h>
+
 #define BLACK	        0
 #define LIGHT_RED	    1
 #define LIGHT_GREEN	    2
@@ -22,6 +24,52 @@ void out8(short port, char data);
 extern char hankaku[4096];
 
 unsigned char (*vram)[320] = (unsigned char (*)[320])0xa0000;
+
+int sprintf(char * restrict s, const char * restrict format, ...) {
+    va_list ap;
+    va_start(ap, format);
+    int n = 0;
+    while (*format != '\0') {
+        if (*format == '%' && (*(format+1) == 'd')) {
+            format += 2;
+            
+            int i = va_arg(ap, int);
+            if (i == 0) {
+                *s = '0';
+                ++s;
+                ++n;
+                continue;
+            }
+
+            /* don't think about INT_MIN */
+            if (i < 0) {
+                *s = '-';
+                ++s;
+                ++n;
+
+                i = -i;
+            }
+
+            int pow10 = 1;
+            while ((i / (pow10*10)) > 0) {
+                pow10 *= 10;
+            }
+
+            while (pow10 > 0) {
+                *s = '0' + (i / pow10);
+                ++s;
+                ++n;
+                i -= (i / pow10) * pow10;
+                pow10 /= 10;
+            }
+        } else {
+            *s = *format;
+            ++s;
+            ++format;
+            ++n;
+        }
+    }
+}
 
 void init_palette(void) {
     unsigned char palette_rgb[16*3] = {
@@ -84,7 +132,9 @@ void main(void) {
     init_palette();
 
     boxfill(DARK_CYAN, 0, 0, 320-1, 200-1);
-    putstr(10, 10, WHITE, "hello, world");
+    char s[100];
+    sprintf(s, "hello, world %d", 3149);
+    putstr(10, 10, WHITE, s);
 
     while (1) {
         asm volatile("hlt");

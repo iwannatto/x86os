@@ -35,7 +35,7 @@ ipl.bin: ipl.s ipl.ld
 	$(CC) $(CFLAGS) -o $@ -nostdlib -T ipl.ld ipl.s
 
 x86os.bin: $(OS_SRCS) x86os.ld
-	$(LD) -M -o $@ -nostdlib -T x86os.ld $(OS_SRCS)
+	$(LD) -o $@ -nostdlib -T x86os.ld $(OS_SRCS)
 
 hankaku.c: hankaku.txt hankaku.py
 	python3 hankaku.py

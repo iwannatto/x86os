@@ -14,4 +14,8 @@ MEMORY {
 
 SECTIONS {
     .text : { entry.o(.text) } >KERNEL
+    /*
+     * The rest of the section seems to be placed here
+     * without being explicitly stated
+     */
 }
