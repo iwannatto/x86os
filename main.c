@@ -128,6 +128,58 @@ void putstr(int x0, int y0, unsigned char color, char *str) {
     return;
 }
 
+void init_mouse_cursor(char *mouse, char bgcolor) {
+    char cursor[16][16] = {
+        "**************..",
+        "*OOOOOOOOOOO*...",
+        "*OOOOOOOOOO*....",
+        "*OOOOOOOOO*.....",
+        "*OOOOOOOO*......",
+        "*OOOOOOO*.......",
+        "*OOOOOOO*.......",
+        "*OOOOOOOO*......",
+        "*OOOO**OOO*.....",
+        "*OOO*..*OOO*....",
+        "*OO*....*OOO*...",
+        "*O*......*OOO*..",
+        "**........*OOO*.",
+        "*..........*OOO*",
+        "............*OO*",
+        "............****",
+    };
+
+    for (int y = 0; y < 16; ++y) {
+        for (int x = 0; x < 16; ++x) {
+            char c;
+            switch (cursor[y][x]) {
+                case '*':
+                    c = BLACK;
+                    break;
+                case 'O':
+                    c = WHITE;
+                    break;
+                case '.':
+                    c = bgcolor;
+                    break;            
+                default:
+                    break;
+            }
+            mouse[y*16 + x] = c;
+        }
+    }
+
+    return;
+}
+
+void putblock(int x0, int y0, int xsize, int ysize, char *buf) {
+    for (int y = 0; y < ysize; ++y) {
+        for (int x = 0; x < xsize; ++x) {
+            vram[y0+y][x0+x] = buf[y*xsize + x];
+        }
+    }
+    return;
+}
+
 void main(void) {
     init_palette();
 
@@ -135,6 +187,10 @@ void main(void) {
     char s[100];
     sprintf(s, "hello, world %d", 3149);
     putstr(10, 10, WHITE, s);
+
+    char mcursor[16*16];
+    init_mouse_cursor(mcursor, DARK_CYAN);
+    putblock(100, 100, 16, 16, mcursor);
 
     while (1) {
         asm volatile("hlt");
