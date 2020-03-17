@@ -19,3 +19,21 @@ out8:
     movb    8(%esp), %al
     outb    %al, %dx
     ret
+
+.globl  asm_inthandler21
+asm_inthandler21:
+    pushw   %es
+    pushw   %ds
+    pushal
+    movl    %esp, %eax
+    pushl   %eax
+    movw    %ss, %ax
+    movw    %ax, %ds
+    movw    %ax, %es
+    call    inthandler21
+    popl    %eax
+    popal
+    popw    %ds
+    popw    %es
+    iret
+    

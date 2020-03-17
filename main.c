@@ -17,6 +17,32 @@
 #define DARK_CYAN   	14
 #define DARK_GRAY   	15
 
+#define PIC0_ICW1	0x0020
+#define PIC0_OCW2	0x0020
+#define PIC0_IMR	0x0021
+#define PIC0_ICW2	0x0021
+#define PIC0_ICW3	0x0021
+#define PIC0_ICW4	0x0021
+
+#define PIC1_ICW1	0x00a0
+#define PIC1_OCW2	0x00a0
+#define PIC1_IMR	0x00a1
+#define PIC1_ICW2	0x00a1
+#define PIC1_ICW3	0x00a1
+#define PIC1_ICW4	0x00a1
+
+#define AR_INTGATE32    0x008e
+
+struct gate_descriptor {
+    short offset_low, selector;
+    char hoge, access_right;
+    short offset_high;
+};
+
+extern struct gate_descriptor idt[256];
+
+extern void asm_inthandler21(void);
+
 int load_eflags(void);
 void store_eflags(int eflags);
 void out8(short port, char data);
@@ -69,6 +95,9 @@ int sprintf(char * restrict s, const char * restrict format, ...) {
             ++n;
         }
     }
+    *s = '\0';
+    ++n;
+    return n;
 }
 
 void init_palette(void) {
@@ -180,13 +209,58 @@ void putblock(int x0, int y0, int xsize, int ysize, char *buf) {
     return;
 }
 
+void set_gate_descriptor(struct gate_descriptor *gd, int offset,
+                         int selector, int access_right)
+{
+    gd->offset_low = offset & 0xffff;
+    gd->selector = selector;
+    gd->hoge = (access_right >> 8) & 0xff;
+    gd->access_right = access_right & 0xff;
+    gd->offset_high = (offset >> 16) & 0xffff;
+    return;
+}
+
+void inthandler21(int *esp) {
+    putstr(110, 110, WHITE, "key");
+    while (1) {
+        asm volatile("hlt");
+    }
+}
+
+void init_idt(void) {
+    set_gate_descriptor(idt+0x21, (int)asm_inthandler21, 2<<3, AR_INTGATE32);
+}
+
+void init_pic(void) {
+    /* all interrupts to PIC should have been already masked */
+
+    out8(PIC0_ICW1, 0x11);  /* initialize */
+    out8(PIC0_ICW2, 0x20);	/* receive IRQ0~7 as INT0x20~0x27 */
+    out8(PIC0_ICW3, 1<<2);  /* IRQ2 is connected to slave PIC */
+    out8(PIC0_ICW4, 0x01);	/* x86 */
+    
+    out8(PIC1_ICW1, 0x11);	/* initialize */
+    out8(PIC1_ICW2, 0x28);	/* receive IRQ8~15 as INT0x28~2f */
+    out8(PIC1_ICW3, 2);     /* IRQ number the master PIC uses to connect to is 2 */
+    out8(PIC1_ICW4, 0x01);	/* x86 */
+    
+    out8(PIC0_IMR, 0xfb);	/* mask 11111011 (only IRQ2=PIC1 is allowed) */
+    out8(PIC1_IMR, 0xff);	/* mask 11111111 */
+}
+
 void main(void) {
     init_palette();
+    init_pic();
+    init_idt();
+    out8(PIC0_IMR, 0xf9);
+    asm volatile("sti");
 
     boxfill(DARK_CYAN, 0, 0, 320-1, 200-1);
     char s[100];
     sprintf(s, "hello, world %d", 3149);
-    putstr(10, 10, WHITE, s);
+    putstr(0, 0, WHITE, s);
+    sprintf(s, "%d, %d", (int)asm_inthandler21, (int)idt);
+    putstr(0, 16, WHITE, s);
 
     char mcursor[16*16];
     init_mouse_cursor(mcursor, DARK_CYAN);

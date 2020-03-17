@@ -1,9 +1,9 @@
 .code16
 .text
 
-# screen
+# set video mode
     movb    $0x00, %ah
-    movb    $0x13, %al
+    movb    $0x13, %al  # 320*200*8bit
     int     $0x10
 
 # into protected mode
@@ -20,16 +20,16 @@
     cli
 
     # enable A20 gate
-    # 0xdf is magic number for me...
     call    waitkbdout
     movb    $0xd1, %al
     outb    %al, $0x64
     call    waitkbdout
-    movb    $0xdf, %al
+    movb    $0xdf, %al  # 0xdf is magic number for me...
     outb    %al, $0x60
     call    waitkbdout
 
-    lgdtl   (GDTR0)
+    # set GDT
+    lgdtl   gdtr
     # disable paging and enable protected mode
     movl    %cr0, %eax
     andl    $0x7fffffff, %eax
@@ -47,6 +47,9 @@ pipelineflush:
     movw    %ax, %gs
     movw    %ax, %ss
 
+    # set IDT
+    lidtl   idtr
+
     # jump to main in main.c and reset cs
     ljmpl   $(2 << 3), $main
 
@@ -61,16 +64,26 @@ waitkbdout:
     jnz     waitkbdout
     ret
 
+# definition of GDT
 .align 8
-GDT0:
+gdt:
     # null selector
     .word   0x0000, 0x0000, 0x0000, 0x0000
     # limit: 0xfffff000, base:0x00000000, R/W
     .word   0xffff, 0x0000, 0x9200, 0x00cf
     # limit: 0x7ffff, base:0x00000000, E/R
     .word   0xffff, 0x0000, 0x9a00, 0x0047
+gdtr:
+    .word   8*3-1   # limit (16bit)
+    .int    gdt     # base address (32bit)
 
-# limit and base address
-GDTR0:
-    .word   8*3-1
-    .int    GDT0
+# definition of IDT
+.align 8
+.globl  idt
+idt:
+.rept   256
+    .word   0x0000, 0x0000, 0x0000, 0x0000
+.endr
+idtr:
+    .word   8*256-1
+    .int    idt
