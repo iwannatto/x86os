@@ -10,7 +10,7 @@ load_eflags:
 store_eflags:
     movl    4(%esp), %eax
     pushl   %eax
-    popfl  
+    popfl
     ret
 
 .globl  out8
@@ -36,4 +36,3 @@ asm_inthandler21:
     popw    %ds
     popw    %es
     iret
-    

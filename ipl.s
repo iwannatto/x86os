@@ -43,7 +43,7 @@ entry:
     movb    $0, %dl
     # %bx = destination address & 0xf (strictly different)
     movw    $0, %bx
-  
+
     # initial value:
     # %ch = index of cylinder (strictly different)
     movb    $0, %ch
