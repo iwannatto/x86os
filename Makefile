@@ -8,7 +8,7 @@ CFLAGS := -m32 -march=i486
 ASFLAGS := --32 -march=i486
 
 IMG := x86os.img
-OS_SRCS := entry.o main.o asm.o hankaku.o
+OS_SRCS := entry.o main.o asm.o graphic.o hankaku.o interrupt.o pic.o util.o
 
 .PHONY: run clean
 
@@ -37,8 +37,10 @@ ipl.bin: ipl.s ipl.ld
 x86os.bin: $(OS_SRCS) x86os.ld
 	$(LD) -o $@ -nostdlib -T x86os.ld $(OS_SRCS)
 
-hankaku.c: hankaku.txt hankaku.py
-	python3 hankaku.py
+# this is wrong
+# because hankaku.py does not generate "include "hankaku.h"" in hankaku.c
+#hankaku.c: hankaku.txt hankaku.py
+#	python3 hankaku.py
 
 clean:
 	$(RM) $(IMG) *.bin *.o
