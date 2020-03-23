@@ -13,6 +13,13 @@ store_eflags:
     popfl
     ret
 
+.globl  in8
+in8:
+    movw    4(%esp), %dx
+    movb    $0, %al
+    inb     %dx, %al
+    ret
+
 .globl  out8
 out8:
     movw    4(%esp), %dx

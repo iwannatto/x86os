@@ -16,6 +16,8 @@
 #define PIC1_ICW3 0x00a1
 #define PIC1_ICW4 0x00a1
 
+#define KEYDATA 0x0060
+
 /* before calling this, all interrupts to PIC must be masked */
 void init_pic(void)
 {
@@ -32,4 +34,10 @@ void init_pic(void)
     /* allow IRQ2=PIC1 and IRQ1=keyboard */
     out8(PIC0_IMR, 0b11111001);
     out8(PIC1_IMR, 0xff);
+}
+
+char key_read(void)
+{
+    out8(PIC0_OCW2, 0x61); /* re-enable IRQ1 */
+    return in8(KEYDATA);
 }
