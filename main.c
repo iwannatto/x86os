@@ -8,6 +8,7 @@ void main(void)
 {
     init_palette();
     init_idt();
+    init_KBC();
     init_pic();
     asm volatile("sti");
 
@@ -17,12 +18,18 @@ void main(void)
 
     while (1) {
         asm volatile("cli");
-        int r = keybuf_read();
-        if (r == KEYBUF_READ_EMPTY) {
+        int kr = keybuf_read();
+        int mr = mousebuf_read();
+        if (kr == KEYBUF_READ_EMPTY && mr == MOUSEBUF_READ_EMPTY) {
             asm volatile("sti; hlt");
             continue;
         }
         asm volatile("sti");
-        printf("%d\n", r);
+        if (kr != KEYBUF_READ_EMPTY) {
+            printf("k:%d ", kr);
+        }
+        if (mr != MOUSEBUF_READ_EMPTY) {
+            printf("m:%d ", mr);
+        }
     }
 }

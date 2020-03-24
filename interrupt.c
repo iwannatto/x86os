@@ -15,43 +15,57 @@ struct gate_descriptor {
 /* in entry.s */
 extern struct gate_descriptor idt[256];
 
-#define KEYBUF_SIZE 256
+#define RINGBUF_SIZE 256
 
-struct keyboard_buffer {
-    unsigned char buf[KEYBUF_SIZE];
+struct ringbuf {
+    unsigned char buf[RINGBUF_SIZE];
     int head, tail;
 };
 
-static struct keyboard_buffer keybuf;
+static struct ringbuf keybuf;
+static struct ringbuf mousebuf;
 
-#define KEYBUF_WRITE_SUCCESS 0
-#define KEYBUF_WRITE_FULL -1
+#define RINGBUF_WRITE_SUCCESS 0
+#define RINGBUF_WRITE_FULL -1
 
-int keybuf_write(int x)
+int ringbuf_write(struct ringbuf *rbuf, int x)
 {
-    int h = (keybuf.head + 1) % KEYBUF_SIZE;
-    if (h == keybuf.tail) {
-        return KEYBUF_WRITE_FULL;
+    int h = (rbuf->head + 1) % RINGBUF_SIZE;
+    if (h == rbuf->tail) {
+        return RINGBUF_WRITE_FULL;
     }
 
-    keybuf.buf[keybuf.head] = x;
-    keybuf.head = h;
-    return KEYBUF_WRITE_SUCCESS;
+    rbuf->buf[rbuf->head] = x;
+    rbuf->head = h;
+    return RINGBUF_WRITE_SUCCESS;
 }
 
-int keybuf_read(void)
+int ringbuf_read(struct ringbuf *rbuf)
 {
-    printf("%d, %d\n", keybuf.head, keybuf.tail);
-    if (keybuf.tail == keybuf.head) {
+    if (rbuf->tail == rbuf->head) {
         return KEYBUF_READ_EMPTY;
     }
 
-    int r = keybuf.buf[keybuf.tail];
-    keybuf.tail = (keybuf.tail + 1) % KEYBUF_SIZE;
+    int r = rbuf->buf[rbuf->tail];
+    rbuf->tail = (rbuf->tail + 1) % RINGBUF_SIZE;
     return r;
 }
 
-void inthandler21(int *esp) { keybuf_write((int)key_read()); }
+int keybuf_read(void) { return ringbuf_read(&keybuf); }
+int mousebuf_read(void) { return ringbuf_read(&mousebuf); }
+
+void inthandler21(int *esp) { ringbuf_write(&keybuf, (int)key_read()); }
+
+void inthandler2c(int *esp) { ringbuf_write(&mousebuf, (int)mouse_read()); }
+
+void init_ringbuf(struct ringbuf *rbuf)
+{
+    for (int i = 0; i < RINGBUF_SIZE; ++i) {
+        rbuf->buf[i] = 0;
+        rbuf->head = 0;
+        rbuf->tail = 0;
+    }
+}
 
 void set_gate_descriptor(struct gate_descriptor *gd, int offset, int selector,
                          int access_right)
@@ -64,18 +78,12 @@ void set_gate_descriptor(struct gate_descriptor *gd, int offset, int selector,
     return;
 }
 
-void init_keybuf(void)
-{
-    for (int i = 0; i < KEYBUF_SIZE; ++i) {
-        keybuf.buf[i] = 0;
-        keybuf.head = 0;
-        keybuf.tail = 0;
-    }
-}
-
 void init_idt(void)
 {
-    init_keybuf();
+    init_ringbuf(&keybuf);
+    init_ringbuf(&mousebuf);
     set_gate_descriptor(idt + 0x21, (int)asm_inthandler21, 2 << 3,
+                        AR_INTGATE32);
+    set_gate_descriptor(idt + 0x2c, (int)asm_inthandler2c, 2 << 3,
                         AR_INTGATE32);
 }

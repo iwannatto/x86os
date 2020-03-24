@@ -43,3 +43,20 @@ asm_inthandler21:
     popw    %ds
     popw    %es
     iret
+
+.globl  asm_inthandler2c
+asm_inthandler2c:
+    pushw   %es
+    pushw   %ds
+    pushal
+    movl    %esp, %eax
+    pushl   %eax
+    movw    %ss, %ax
+    movw    %ax, %ds
+    movw    %ax, %es
+    call    inthandler2c
+    popl    %eax
+    popal
+    popw    %ds
+    popw    %es
+    iret

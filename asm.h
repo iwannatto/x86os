@@ -6,3 +6,4 @@ char in8(short port);
 void out8(short port, char data);
 
 void asm_inthandler21(void);
+void asm_inthandler2c(void);
