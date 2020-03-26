@@ -16,7 +16,7 @@ store_eflags:
 .globl  in8
 in8:
     movw    4(%esp), %dx
-    movb    $0, %al
+    movl    $0, %eax
     inb     %dx, %al
     ret
 

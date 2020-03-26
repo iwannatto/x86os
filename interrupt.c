@@ -1,8 +1,5 @@
 #include "interrupt.h"
-
 #include "asm.h"
-#include "pic.h"
-#include "util.h"
 
 #define AR_INTGATE32 0x008e
 
@@ -14,63 +11,6 @@ struct gate_descriptor {
 
 /* in entry.s */
 extern struct gate_descriptor idt[256];
-
-#define RINGBUF_SIZE 256
-
-struct ringbuf {
-    unsigned char buf[RINGBUF_SIZE];
-    int head, tail;
-};
-
-static struct ringbuf keybuf;
-static struct ringbuf mousebuf;
-
-#define RINGBUF_WRITE_SUCCESS 0
-#define RINGBUF_WRITE_FULL -1
-
-int ringbuf_write(struct ringbuf *rbuf, unsigned char x)
-{
-    int h = (rbuf->head + 1) % RINGBUF_SIZE;
-    if (h == rbuf->tail) {
-        return RINGBUF_WRITE_FULL;
-    }
-
-    rbuf->buf[rbuf->head] = x;
-    rbuf->head = h;
-    return RINGBUF_WRITE_SUCCESS;
-}
-
-unsigned char ringbuf_read(struct ringbuf *rbuf, int *status)
-{
-    if (rbuf->tail == rbuf->head) {
-        /* FIXME: key and mouse is mixed */
-        *status = KEYBUF_READ_EMPTY;
-        return 0;
-    }
-
-    unsigned char r = rbuf->buf[rbuf->tail];
-    rbuf->tail = (rbuf->tail + 1) % RINGBUF_SIZE;
-    return r;
-}
-
-int keybuf_read(int *status) { return ringbuf_read(&keybuf, status); }
-unsigned char mousebuf_read(int *status)
-{
-    return ringbuf_read(&mousebuf, status);
-}
-
-void inthandler21(int *esp) { ringbuf_write(&keybuf, (int)key_read()); }
-
-void inthandler2c(int *esp) { ringbuf_write(&mousebuf, (int)mouse_read()); }
-
-void init_ringbuf(struct ringbuf *rbuf)
-{
-    for (int i = 0; i < RINGBUF_SIZE; ++i) {
-        rbuf->buf[i] = 0;
-        rbuf->head = 0;
-        rbuf->tail = 0;
-    }
-}
 
 void set_gate_descriptor(struct gate_descriptor *gd, int offset, int selector,
                          int access_right)
@@ -85,8 +25,6 @@ void set_gate_descriptor(struct gate_descriptor *gd, int offset, int selector,
 
 void init_idt(void)
 {
-    init_ringbuf(&keybuf);
-    init_ringbuf(&mousebuf);
     set_gate_descriptor(idt + 0x21, (int)asm_inthandler21, 2 << 3,
                         AR_INTGATE32);
     set_gate_descriptor(idt + 0x2c, (int)asm_inthandler2c, 2 << 3,

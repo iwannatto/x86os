@@ -16,34 +16,6 @@
 #define PIC1_ICW3 0x00a1
 #define PIC1_ICW4 0x00a1
 
-#define KBC_DATA 0x0060
-#define KBC_STATUS 0x0064
-#define KBC_COMMAND 0x0064
-#define READY_TO_SEND(status) ((status & (1 << 1)) == 0)
-#define CONFIGURE_MODE 0x60
-#define ACCEPT_MOUSE_MODE 0x47
-#define CONFIGURE_MOUSE 0xd4
-#define ENABLE_MOUSE 0xf4
-
-void wait_until_KBC_ready(void)
-{
-    while (!READY_TO_SEND(in8(KBC_STATUS))) {
-        ;
-    }
-}
-
-void init_KBC(void)
-{
-    wait_until_KBC_ready();
-    out8(KBC_COMMAND, CONFIGURE_MODE);
-    wait_until_KBC_ready();
-    out8(KBC_DATA, ACCEPT_MOUSE_MODE);
-    wait_until_KBC_ready();
-    out8(KBC_COMMAND, CONFIGURE_MOUSE);
-    wait_until_KBC_ready();
-    out8(KBC_DATA, ENABLE_MOUSE);
-}
-
 /* before calling this, all interrupts to PIC must be masked */
 void init_pic(void)
 {
@@ -61,15 +33,10 @@ void init_pic(void)
     out8(PIC1_IMR, 0b11101111); /* allow IRQ-12=mouse */
 }
 
-char key_read(void)
-{
-    out8(PIC0_OCW2, 0x61); /* re-enable IRQ-1 */
-    return in8(KBC_DATA);
-}
+void reenable_keyint(void) { out8(PIC0_OCW2, 0x61); /* re-enable IRQ-1 */ }
 
-char mouse_read(void)
+void reenable_mouseint(void)
 {
     out8(PIC1_OCW2, 0x64); /* re-enable IRQ-12 */
     out8(PIC0_OCW2, 0x62); /* re-enable IRQ-2 */
-    return in8(KBC_DATA);
 }

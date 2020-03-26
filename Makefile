@@ -8,7 +8,9 @@ CFLAGS := -m32 -march=i486
 ASFLAGS := --32 -march=i486
 
 IMG := x86os.img
-OS_SRCS := entry.o main.o asm.o graphic.o hankaku.o interrupt.o pic.o util.o
+OS_SRCS := entry.o main.o \
+	asm.o graphic.o hankaku.o interrupt.o \
+	kbc.o keyboard.o mouse.o pic.o ringbuf.o util.o
 
 .PHONY: run clean
 
