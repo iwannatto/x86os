@@ -28,7 +28,7 @@ static struct ringbuf mousebuf;
 #define RINGBUF_WRITE_SUCCESS 0
 #define RINGBUF_WRITE_FULL -1
 
-int ringbuf_write(struct ringbuf *rbuf, int x)
+int ringbuf_write(struct ringbuf *rbuf, unsigned char x)
 {
     int h = (rbuf->head + 1) % RINGBUF_SIZE;
     if (h == rbuf->tail) {
@@ -40,19 +40,24 @@ int ringbuf_write(struct ringbuf *rbuf, int x)
     return RINGBUF_WRITE_SUCCESS;
 }
 
-int ringbuf_read(struct ringbuf *rbuf)
+unsigned char ringbuf_read(struct ringbuf *rbuf, int *status)
 {
     if (rbuf->tail == rbuf->head) {
-        return KEYBUF_READ_EMPTY;
+        /* FIXME: key and mouse is mixed */
+        *status = KEYBUF_READ_EMPTY;
+        return 0;
     }
 
-    int r = rbuf->buf[rbuf->tail];
+    unsigned char r = rbuf->buf[rbuf->tail];
     rbuf->tail = (rbuf->tail + 1) % RINGBUF_SIZE;
     return r;
 }
 
-int keybuf_read(void) { return ringbuf_read(&keybuf); }
-int mousebuf_read(void) { return ringbuf_read(&mousebuf); }
+int keybuf_read(int *status) { return ringbuf_read(&keybuf, status); }
+unsigned char mousebuf_read(int *status)
+{
+    return ringbuf_read(&mousebuf, status);
+}
 
 void inthandler21(int *esp) { ringbuf_write(&keybuf, (int)key_read()); }
 

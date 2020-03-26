@@ -89,3 +89,33 @@ int printf(const char *restrict format, ...)
 
     return n;
 }
+
+/* font size and vram size are hard-coded */
+int fixed_printf(const char *restrict format, ...)
+{
+    int x = 0;
+    int y = 0;
+
+    char s[100];
+    va_list ap;
+    va_start(ap, format);
+    int n = vsprintf(s, format, ap);
+    va_end(ap);
+
+    for (int i = 0; s[i] != '\0'; ++i) {
+        if (s[i] == '\n') {
+            x = 0;
+            y += 16;
+            continue;
+        }
+
+        drawchar(x, y, WHITE, s[i]);
+        x += 8;
+        if (x >= 320 - 7) {
+            x = 0;
+            y += 16;
+        }
+    }
+
+    return n;
+}

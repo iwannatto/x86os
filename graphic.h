@@ -19,5 +19,6 @@
 
 void init_palette(void);
 void init_background(void);
+void drawsq(int x0, int y0, int x1, int y1, unsigned char color);
 void drawchar(int x0, int y0, unsigned char color, char c);
-void draw_mouse_cursor(void);
+void draw_mouse_cursor(int x0, int y0);

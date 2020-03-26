@@ -58,10 +58,8 @@ void drawchar(int x0, int y0, unsigned char color, char c)
 
 void init_background(void) { drawsq(0, 0, 320 - 1, 200 - 1, DARK_CYAN); }
 
-void draw_mouse_cursor(void)
+void draw_mouse_cursor(int x0, int y0)
 {
-    int x0 = 100;
-    int y0 = 100;
     int bgcolor = DARK_CYAN;
 
     char cursor[16][16] = {
