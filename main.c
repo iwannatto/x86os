@@ -3,9 +3,12 @@
 #include "interrupt.h"
 #include "kbc.h"
 #include "keyboard.h"
+#include "mem.h"
 #include "mouse.h"
 #include "pic.h"
 #include "util.h"
+
+extern int memman[50];
 
 void main(void)
 {
@@ -18,7 +21,13 @@ void main(void)
     init_background();
     init_keyboard();
     init_mouse();
-    printf("hello, world\n", 0);
+
+    unsigned int memtotal = memtest((void *)0x00400000, (void *)0xbfffffff);
+    init_memman();
+    free((void *)0x00001000, 0x0009e000);
+    free((void *)0x00400000, memtotal - 0x00400000);
+    printf("mem: %dMB free: %dKB\n", (int)memtotal / 1024 / 1024,
+           (int)size_of_free() / 1024);
 
     while (1) {
         draw_keyinput();

@@ -1,4 +1,5 @@
 /*.bin
 /*.o
+/.vscode
 /sankou
 /x86os.img
