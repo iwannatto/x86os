@@ -1,7 +1,7 @@
 #include "graphic.h"
-
 #include "asm.h"
 #include "hankaku.h"
+#include "mem.h"
 
 #define PALETTE_INDEX 0x03c8
 #define PALETTE_RGB 0x03c9

@@ -5,4 +5,5 @@
 unsigned int memtest(void *start, void *end);
 void init_memman(void);
 unsigned int size_of_free(void);
-int free(void *addr, unsigned int size);
+void *malloc4k(unsigned int size);
+int freeb(void *addr, unsigned int size);

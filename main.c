@@ -22,10 +22,11 @@ void main(void)
     init_keyboard();
     init_mouse();
 
-    unsigned int memtotal = memtest((void *)0x00400000, (void *)0xbfffffff);
+    unsigned int memtotal =
+        0x00400000 + memtest((void *)0x00400000, (void *)0xbfffffff);
     init_memman();
-    free((void *)0x00001000, 0x0009e000);
-    free((void *)0x00400000, memtotal - 0x00400000);
+    freeb((void *)0x00001000, 0x0009e000);
+    freeb((void *)0x00400000, memtotal - 0x00400000);
     printf("mem: %dMB free: %dKB\n", (int)memtotal / 1024 / 1024,
            (int)size_of_free() / 1024);
 
