@@ -7,7 +7,7 @@
 #define PALETTE_RGB 0x03c9
 
 /* 320*200 */
-unsigned char (*vram)[320] = (unsigned char (*)[320])0xa0000;
+static unsigned char (*vram)[320] = (unsigned char (*)[320])0xa0000;
 
 void init_palette(void)
 {

@@ -10,7 +10,7 @@ ASFLAGS := --32 -march=i486
 IMG := x86os.img
 OS_SRCS := entry.o main.o \
 	asm.o graphic.o hankaku.o interrupt.o \
-	kbc.o keyboard.o mem.o mouse.o pic.o ringbuf.o util.o
+	kbc.o keyboard.o layer.o mem.o mouse.o pic.o ringbuf.o util.o
 
 .PHONY: run clean
 
